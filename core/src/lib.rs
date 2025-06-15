@@ -8,6 +8,13 @@ use serde::{Deserialize, Serialize};
 pub mod ledger;
 pub mod pow;
 mod block_ext;
+
+// New public modules
+pub mod error;
+pub mod config;
+
+// Re-export common types for convenience
+pub use error::{Error, Result};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub type Hash = [u8; 32];

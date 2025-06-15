@@ -19,7 +19,6 @@ use crate::Hash;
 /// * `difficulty == 8` → hash must start with one `0x00` byte.
 /// * `difficulty == 12` → first byte `0x00`, second byte`s` high 4 bits zero.
 pub fn hash_meets_difficulty(hash: &Hash, difficulty: u32) -> bool {
-pub fn hash_meets_difficulty(hash: &Hash, difficulty: u32) -> bool {
     if difficulty == 0 {
         return true;
     }

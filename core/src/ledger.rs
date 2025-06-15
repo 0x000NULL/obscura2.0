@@ -15,7 +15,7 @@
 //! should be part of higher layers.
 use std::collections::HashMap;
 
-use crate::{Hash, Transaction, TxOutput, Block};
+use crate::{Hash, Transaction, TxOutput, Block, Error, Result};
 use ed25519_dalek::{PublicKey, Signature};
 use blake2::{Blake2b512, Digest};
 
@@ -38,7 +38,7 @@ impl Ledger {
     ///
     /// The genesis must satisfy the same validity rules as any other block
     /// except that its `prev_hash` is all zeros and its index is 1.
-    pub fn new(genesis: &Block) -> Result<Self, String> {
+    pub fn new(genesis: &Block) -> Result<Self> {
         let mut ledger = Ledger { utxos: HashMap::new(), height: 0, tip: [0u8; 32] };
         ledger.apply_block(genesis)?;
         Ok(ledger)
@@ -52,13 +52,13 @@ impl Ledger {
     ///
     /// Errors on double-spends, value overflow, signature failure or bad
     /// linkage.
-    pub fn apply_block(&mut self, block: &Block) -> Result<(), String> {
+    pub fn apply_block(&mut self, block: &Block) -> Result<()> {
         // simple prev check
         if block.header.index != self.height + 1 {
-            return Err("non-sequential height".into());
+            return Err(Error::NonSequentialHeight);
         }
         if block.header.prev_hash != self.tip {
-            return Err("prev hash mismatch".into());
+            return Err(Error::PrevHashMismatch);
         }
         // iterate transactions
         for (idx, tx) in block.transactions.iter().enumerate() {
@@ -98,7 +98,7 @@ impl Ledger {
         msg
     }
 
-    fn validate_tx(&self, tx: &Transaction) -> Result<(), String> {
+    fn validate_tx(&self, tx: &Transaction) -> Result<()> {
         let mut input_value = 0u64;
         let mut output_value = 0u64;
         for inp in &tx.inputs {
@@ -107,21 +107,21 @@ impl Ledger {
                 // Signature verification (skip if empty for placeholder)
                 if !inp.signature.is_empty() {
                     let pk = PublicKey::from_bytes(&inp.pubkey)
-                        .map_err(|_| "invalid pubkey")?;
+                        .map_err(|_| Error::Other("invalid pubkey"))?;
                     let sig = Signature::from_bytes(&inp.signature)
-                        .map_err(|_| "invalid signature")?;
+                        .map_err(|_| Error::Other("invalid signature"))?;
                     let msg = Self::tx_message(tx);
-                    pk.verify_strict(&msg, &sig).map_err(|_| "bad signature")?;
+                    pk.verify_strict(&msg, &sig).map_err(|_| Error::BadSignature)?;
                 }
             } else {
-                return Err("referenced UTXO not found".into());
+                return Err(Error::MissingUtxo);
             }
         }
         for out in &tx.outputs {
             output_value += out.value;
         }
         if output_value > input_value {
-            return Err("outputs exceed inputs".into());
+            return Err(Error::ValueOverflow);
         }
         Ok(())
     }
