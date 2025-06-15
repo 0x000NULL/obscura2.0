@@ -1,0 +1,7 @@
+[book]
+# Title shown on generated pages
+title = "Obscura Blockchain – User Guide"
+
+[build]
+# Directory where the HTML will be placed (relative to workspace root)
+build-dir = "target/book"

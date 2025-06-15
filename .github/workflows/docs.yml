@@ -1,0 +1,53 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Rust (stable)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rust-docs
+          override: true
+
+      - name: Install mdBook
+        run: cargo install mdbook --locked
+
+      - name: Install cargo-readme
+        run: cargo install cargo-readme --locked
+
+      - name: Generate crate READMEs
+        run: |
+          set -e
+          for crate in core network wallet cli rpc zk gui-wallet; do
+            (cd $crate && cargo readme > README.md)
+          done
+
+      - name: Build workspace docs
+        run: |
+          cargo doc --no-deps --workspace
+          mdbook build docs
+          # Move mdBook output under guide/ so both sites are published together
+          mkdir -p target/doc/guide
+          cp -r target/book/* target/doc/guide/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc
+          publish_branch: gh-pages
+          keep_files: true
+          force_orphan: true

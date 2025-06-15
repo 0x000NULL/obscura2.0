@@ -1,0 +1,16 @@
+[package]
+name = "obscura-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "obscura"
+path = "src/main.rs"
+
+autobins = false
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+obscura-core = { path = "../core" }
+obscura-wallet = { path = "../wallet" }
+obscura-network = { path = "../network" }

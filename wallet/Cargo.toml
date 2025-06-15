@@ -1,0 +1,10 @@
+[package]
+name = "obscura-wallet"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ed25519-dalek = { version = "1", features = ["serde"] }
+rand = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+hex = "0.4"

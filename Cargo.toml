@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    "core",
+    "network",
+    "wallet",
+    "rpc",
+    "zk",
+    "cli",
+    "gui-wallet"
+]
+
+resolver = "2"
+
+[workspace.package]
+edition = "2021"

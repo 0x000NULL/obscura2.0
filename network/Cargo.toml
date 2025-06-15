@@ -1,0 +1,17 @@
+[package]
+name = "obscura-network"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+libp2p = { version = "0.52", default-features = false, features = [
+    "tcp",
+    "dns",
+    "identify",
+    "kad",
+    "gossipsub",
+    "noise",
+    "yamux"
+] }
+serde = { version = "1.0", features = ["derive"] }
